@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bellevue 小學選校比較</title>
+<style>
+:root{--amber:#E0A144;--amber-d:#B4761E;--ink:#2B2622;--paper:#F4EFE4;--card:#FFFFFF;--line:#E2D9C7;--green:#3C7A57;--red:#B4462F;--muted:#8A7E6E;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"PingFang TC","Noto Sans TC",sans-serif;background:var(--paper);color:var(--ink);line-height:1.55;-webkit-text-size-adjust:100%}
+.wrap{max-width:1100px;margin:0 auto;padding:16px}
+header{border-left:6px solid var(--amber);padding:8px 0 8px 14px;margin:8px 0 18px}
+h1{font-size:22px;font-weight:800;letter-spacing:.5px}
+.sub{color:var(--muted);font-size:13px;margin-top:4px}
+.note{background:#fff8ec;border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:12.5px;color:#6b5d49;margin-bottom:16px}
+.controls{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.controls select,.controls button{font:inherit;font-size:13px;padding:8px 10px;border:1.5px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink)}
+.controls button.active{background:var(--amber);border-color:var(--amber-d);color:#fff;font-weight:700}
+table{width:100%;border-collapse:collapse;background:var(--card);border-radius:10px;overflow:hidden;font-size:13px;box-shadow:0 1px 0 var(--line)}
+th,td{padding:9px 8px;text-align:center;border-bottom:1px solid var(--line);white-space:nowrap}
+th{background:var(--ink);color:#f4efe4;font-weight:600;cursor:pointer;font-size:12px;position:sticky;top:0}
+th.sortable:hover{background:#3c352e}
+th .ar{opacity:.5;font-size:10px}
+td.name{text-align:left;font-weight:700;cursor:pointer;color:var(--amber-d);position:sticky;left:0;background:var(--card)}
+tr:nth-child(even) td.name{background:#faf6ee}
+.badge{display:inline-block;padding:1px 6px;border-radius:5px;font-size:11px;font-weight:700}
+.g{background:#e6f0ea;color:var(--green)} .r{background:#f6e3de;color:var(--red)} .n{color:var(--muted)}
+.tag{font-size:10.5px;padding:1px 5px;border-radius:4px;background:#efe6d4;color:#7a6a4f}
+.detail{display:none;background:#faf6ee}
+.detail td{text-align:left;white-space:normal;padding:14px 16px}
+.detail.open{display:table-row}
+.dgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.dbox{border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:#fff}
+.dbox b{font-size:11px;color:var(--muted);font-weight:600;display:block;margin-bottom:3px}
+.dbox span{font-size:14px;font-weight:700}
+.trend{font-size:12px;color:#6b5d49}
+.rc{display:flex;height:16px;border-radius:4px;overflow:hidden;margin-top:4px;font-size:0}
+.rc i{display:block;height:100%}
+.legend{font-size:10.5px;color:var(--muted);margin-top:3px}
+h2{font-size:16px;margin:26px 0 10px;border-left:5px solid var(--amber);padding-left:10px}
+.rec{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--amber);border-radius:8px;padding:12px 14px;margin-bottom:10px;font-size:13.5px}
+.rec b{color:var(--amber-d)}
+footer{color:var(--muted);font-size:11px;margin:24px 0 40px;text-align:center;line-height:1.7}
+@media(max-width:600px){.wrap{padding:10px}h1{font-size:19px}th,td{padding:7px 5px;font-size:12px}}
+</style></head>
+<body><div class="wrap">
+<header><h1>Bellevue 小學選校比較</h1>
+<div class="sub">全 BSD 16 所小學階段選項 · 起點 Crossroads · 資料經獨立 review 驗證 · 2024–26</div></header>
+
+<div class="note">💡 <b>怎麼看：</b>GreatSchools 總分 6 成由「絕對成績」驅動，高分常只反映家庭社經；真正看「學校教得好不好」要看<b>成長率 SGP</b>（50=全州平均，控制了起點）。點校名可展開完整資料。表頭可排序。</div>
+
+<div class="controls">
+<button id="fAll" class="active" onclick="filt('all')">全部</button>
+<button onclick="filt('near')">通勤≤10分</button>
+<button onclick="filt('balanced')">族裔均衡(最大族≤40%)</button>
+<button onclick="filt('normal')">無語言沉浸</button>
+<select id="sortSel" onchange="sortBy(this.value)">
+<option value="commute">排序：通勤</option>
+<option value="gs">GreatSchools</option>
+<option value="ela">ELA達標率</option>
+<option value="sgp_ela">ELA成長SGP</option>
+<option value="teacher">資深教師%</option>
+<option value="maxrace">族裔均衡</option>
+<option value="pta">PTA預算</option>
+</select>
+</div>
+
+<table id="tbl"><thead><tr>
+<th class="name" style="text-align:left">學校</th>
+<th class="sortable" onclick="sortBy('commute')">通勤<span class="ar">↕</span></th>
+<th class="sortable" onclick="sortBy('gs')">GS<span class="ar">↕</span></th>
+<th class="sortable" onclick="sortBy('ela')">ELA達標<span class="ar">↕</span></th>
+<th class="sortable" onclick="sortBy('math')">Math達標<span class="ar">↕</span></th>
+<th class="sortable" onclick="sortBy('sgp_ela')">ELA成長<span class="ar">↕</span></th>
+<th class="sortable" onclick="sortBy('sgp_math')">Math成長<span class="ar">↕</span></th>
+<th class="sortable" onclick="sortBy('teacher')">資深師<span class="ar">↕</span></th>
+<th class="sortable" onclick="sortBy('maxrace')">最大族裔<span class="ar">↕</span></th>
+<th>語言</th>
+</tr></thead><tbody id="tb"></tbody></table>
+
+<h2>綜合推薦（依 Kenji 六條件）</h2>
+<div class="rec"><b>🥇 若忠於「愛的環境＋均衡優先」→ Phantom Lake</b>：族裔最均衡(最大族33%)、通勤最近(6.5分)、有校內足球、校風溫暖。代價要知道：ELA 成長四年下滑到 45(全州以下)、校舍最老(1958)、PTA 最少。軟性條件最貼你，硬教學指標偏弱。</div>
+<div class="rec"><b>🥈 若要「無雷、學業穩、無外語負擔」→ Spiritridge</b>：州測驗前段、SGP 穩定、師資資深89%、族裔算均衡(38%)、純鄰里小學。缺點：通勤10分、課後資訊不透明。</div>
+<div class="rec"><b>🥉 若最重「學業＋師資＋資源」且能接受亞裔偏多→ Cherry Crest</b>：達標率全區最高(89/89)、Math成長73、師資最穩97%、PTA最多、2012新校舍。是普通鄰里小學(不綁沉浸)。硬傷：亞裔72%(撞你多元條件)、通勤10.6分。</div>
+<div class="rec"><b>Bennett（日文沉浸）／Jing Mei（中文沉浸）</b>：兩者學業與硬體都強(Bennett新校舍+師資92%；Jing Mei全州前段+ELA成長71+equity最佳)，但都是<b>強制語言沉浸</b>——要念就走該語言，是你選校前得先想清楚的前提，且都跟你家 SCS 中文(繁體注音)路線不同步。</div>
+
+<footer>
+資料來源：達標率/成長率/師資＝華州 OSPI (data.wa.gov)；族裔＝NCES；GreatSchools 分項＝GreatSchools；PTA＝IRS 990 (ProPublica/CauseIQ)；校舍＝建築事務所/BSD/PCAD。<br>
+達標率＝州測驗 Level 3+4 佔比 (2024-25)。成長率＝Median SGP (2025-26，50=全州平均)。經第二 agent 獨立驗證並修正同名他校污染。<br>
+註：Jing Mei Math 達標率與 Medina Science 為來源抑制(—)；PTA 部分校為 990-N 小額申報無精確值。單年小樣本(每校100-190人)會波動，看趨勢勝於單點。
+</footer>
+</div>
+<script>
+const D=[{"name": "Ardmore", "gs": 7, "gs_test": 4, "gs_prog": 9, "ela": 43, "math": 44, "sci": 42, "sgp_ela": 44.0, "sgp_math": 43.0, "sgp_trend": {"2023-24": {"ELA": "44", "Math": "47"}, "2024-25": {"ELA": "67", "Math": "67"}, "2025-26": {"ELA": "44", "Math": "43"}}, "gap": 9.5, "li_ela": "39", "nli_ela": "48.5", "teacher": 73.0, "ratio": 15.2, "race": {"AmInd": 0, "Asian": 30, "Black": 11, "Hisp": 19, "White": 31, "Pac": 0, "Two": 9}, "maxrace": 31, "race_note": null, "race_total": 415, "pta": null, "pta_note": "990-N 小額申報(<$25k)", "building": "2010 全新重建", "commute": 7.6, "lang": "普通鄰里小學", "centered": "→Cherry Crest"}, {"name": "Bennett", "gs": 8, "gs_test": 9, "gs_prog": 7, "ela": 74, "math": 75, "sci": 81, "sgp_ela": 62.0, "sgp_math": 67.0, "sgp_trend": {"2022-23": {"ELA": "56"}, "2023-24": {"ELA": "59", "Math": "55"}, "2024-25": {"ELA": "57", "Math": "53"}, "2025-26": {"ELA": "62", "Math": "67"}}, "gap": 4.0, "li_ela": "59", "nli_ela": "63", "teacher": 92.3, "ratio": 18.2, "race": {"AmInd": 0, "Asian": 48, "Black": 3, "Hisp": 7, "White": 31, "Pac": 0, "Two": 11}, "maxrace": 48, "race_note": null, "race_total": 513, "pta": 124260, "pta_note": null, "building": "2016 全新重建", "commute": 7.4, "lang": "日文沉浸", "centered": "→Cherry Crest"}, {"name": "Cherry Crest", "gs": 10, "gs_test": 10, "gs_prog": 9, "ela": 89, "math": 89, "sci": 83, "sgp_ela": 61.0, "sgp_math": 73.0, "sgp_trend": {"2022-23": {"ELA": "61"}, "2023-24": {"ELA": "60", "Math": "62"}, "2024-25": {"ELA": "60", "Math": "68.5"}, "2025-26": {"ELA": "61", "Math": "73"}}, "gap": 10.5, "li_ela": "51", "nli_ela": "61.5", "teacher": 97.2, "ratio": 21.1, "race": {"AmInd": 0, "Asian": 72, "Black": 1, "Hisp": 2, "White": 19, "Pac": 0, "Two": 7}, "maxrace": 72, "race_note": null, "race_total": 553, "pta": 200000, "pta_note": "PTSA 自報約$200k(990-N)", "building": "2012 全新重建", "commute": 10.6, "lang": "普通鄰里小學", "centered": "本校"}, {"name": "Clyde Hill", "gs": 9, "gs_test": 9, "gs_prog": 9, "ela": 70, "math": 70, "sci": 66, "sgp_ela": 63.0, "sgp_math": 64.0, "sgp_trend": {"2023-24": {"ELA": "61", "Math": "62"}, "2024-25": {"ELA": "62", "Math": "64"}, "2025-26": {"ELA": "63", "Math": "64"}}, "gap": 26.5, "li_ela": "46.5", "nli_ela": "73", "teacher": 94.7, "ratio": 18.8, "race": {"AmInd": 0, "Asian": 47, "Black": 8, "Hisp": 12, "White": 23, "Pac": 1, "Two": 10}, "maxrace": 47, "race_note": null, "race_total": 594, "pta": 151833, "pta_note": null, "building": "2019 全新重建", "commute": 11.2, "lang": "普通鄰里小學", "centered": "→Medina"}, {"name": "Enatai", "gs": 8, "gs_test": 8, "gs_prog": 7, "ela": 64, "math": 63, "sci": 59, "sgp_ela": 64.0, "sgp_math": 68.0, "sgp_trend": {"2023-24": {"ELA": "60", "Math": "60"}, "2024-25": {"ELA": "56", "Math": "54"}, "2025-26": {"ELA": "64", "Math": "68"}}, "gap": 5.5, "li_ela": "59", "nli_ela": "64.5", "teacher": 90.0, "ratio": 19.0, "race": {"AmInd": 0, "Asian": 35, "Black": 5, "Hisp": 11, "White": 33, "Pac": 0, "Two": 16}, "maxrace": 35, "race_note": null, "race_total": 518, "pta": 66386, "pta_note": null, "building": "2016 全新重建", "commute": 14.2, "lang": "普通鄰里小學", "centered": "→Woodridge"}, {"name": "Lake Hills", "gs": 5, "gs_test": 4, "gs_prog": 6, "ela": 38, "math": 40, "sci": 34, "sgp_ela": 38.0, "sgp_math": 47.5, "sgp_trend": {"2023-24": {"ELA": "46.5", "Math": "55"}, "2024-25": {"ELA": "43", "Math": "59"}, "2025-26": {"ELA": "38", "Math": "47.5"}}, "gap": 3.0, "li_ela": "37", "nli_ela": "40", "teacher": 83.3, "ratio": 15.0, "race": {"AmInd": 0, "Asian": 15, "Black": 17, "Hisp": 40, "White": 18, "Pac": 0, "Two": 11}, "maxrace": 40, "race_note": null, "race_total": 498, "pta": null, "pta_note": "990-N 小額申報", "building": "2004-05 現代化改造(未全新重建)", "commute": 7.7, "lang": "普通鄰里小學", "centered": "→Woodridge"}, {"name": "Medina", "gs": 9, "gs_test": 10, "gs_prog": 8, "ela": 92, "math": 93, "sci": null, "sgp_ela": 67.0, "sgp_math": 72.5, "sgp_trend": {"2022-23": {"ELA": "66.5"}, "2023-24": {"ELA": "54.5", "Math": "58"}, "2024-25": {"ELA": "68", "Math": "65"}, "2025-26": {"ELA": "67", "Math": "72.5"}}, "gap": -3.0, "li_ela": "70", "nli_ela": "67", "teacher": 91.4, "ratio": 21.5, "race": {"AmInd": 0, "Asian": 71, "Black": 0, "Hisp": 3, "White": 18, "Pac": 0, "Two": 8}, "maxrace": 71, "race_note": null, "race_total": 591, "pta": 686610, "pta_note": null, "building": "1957 建，僅小整修(未重建)", "commute": 14.9, "lang": "普通鄰里小學", "centered": "本校"}, {"name": "Newport Heights", "gs": 9, "gs_test": 9, "gs_prog": 8, "ela": 74, "math": 76, "sci": 82, "sgp_ela": 54.5, "sgp_math": 71.0, "sgp_trend": {"2023-24": {"ELA": "54.5", "Math": "62"}, "2024-25": {"ELA": "54.5", "Math": "64"}, "2025-26": {"ELA": "54.5", "Math": "71"}}, "gap": 11.0, "li_ela": "47", "nli_ela": "58", "teacher": 87.5, "ratio": 19.1, "race": {"AmInd": 0, "Asian": 51, "Black": 3, "Hisp": 9, "White": 25, "Pac": 1, "Two": 11}, "maxrace": 51, "race_note": null, "race_total": 549, "pta": 76762, "pta_note": null, "building": "2008 全新重建", "commute": 16.5, "lang": "普通鄰里小學", "centered": "→Somerset"}, {"name": "Phantom Lake", "gs": 8, "gs_test": 8, "gs_prog": 7, "ela": 67, "math": 59, "sci": 73, "sgp_ela": 45.0, "sgp_math": 68.0, "sgp_trend": {"2023-24": {"ELA": "53", "Math": "56"}, "2024-25": {"ELA": "54.5", "Math": "54"}, "2025-26": {"ELA": "45", "Math": "68"}}, "gap": 9.5, "li_ela": "42", "nli_ela": "51.5", "teacher": 79.4, "ratio": 18.7, "race": {"AmInd": 0, "Asian": 32, "Black": 5, "Hisp": 19, "White": 33, "Pac": 0, "Two": 11}, "maxrace": 33, "race_note": null, "race_total": 430, "pta": 57007, "pta_note": null, "building": "1958 建(未重建，最老)", "commute": 6.5, "lang": "希伯來語program(可選普通班)", "centered": "→Woodridge"}, {"name": "Puesta del Sol", "gs": 7, "gs_test": 8, "gs_prog": 6, "ela": 66, "math": 65, "sci": 84, "sgp_ela": 56.0, "sgp_math": 48.5, "sgp_trend": {"2023-24": {"ELA": "48", "Math": "45.5"}, "2024-25": {"ELA": "52.5", "Math": "50.5"}, "2025-26": {"ELA": "56", "Math": "48.5"}}, "gap": 3.5, "li_ela": "53", "nli_ela": "56.5", "teacher": 81.8, "ratio": 18.0, "race": {"AmInd": 0, "Asian": 16, "Black": 1, "Hisp": 39, "White": 33, "Pac": 0, "Two": 11}, "maxrace": 39, "race_note": null, "race_total": 492, "pta": 196896, "pta_note": null, "building": "2023 全新重建(全WA首座淨零小學)", "commute": 4.7, "lang": "西班牙文沉浸", "centered": "—"}, {"name": "Sherwood Forest", "gs": 5, "gs_test": 4, "gs_prog": 5, "ela": 42, "math": 35, "sci": 52, "sgp_ela": 50.0, "sgp_math": 60.5, "sgp_trend": {"2023-24": {"ELA": "50.5", "Math": "50.5"}, "2024-25": {"ELA": "49.5", "Math": "45"}, "2025-26": {"ELA": "50", "Math": "60.5"}}, "gap": 4.0, "li_ela": "50", "nli_ela": "54", "teacher": 76.0, "ratio": 13.5, "race": {"AmInd": 0, "Asian": 18, "Black": 8, "Hisp": 42, "White": 23, "Pac": 0, "Two": 8}, "maxrace": 42, "race_note": null, "race_total": 415, "pta": null, "pta_note": "僅2012舊資料$30k，無新990", "building": "2002 bond 重建(約2009啟用)", "commute": 5.7, "lang": "普通鄰里小學", "centered": "→Cherry Crest"}, {"name": "Somerset", "gs": 10, "gs_test": 10, "gs_prog": 9, "ela": 92, "math": 92, "sci": 90, "sgp_ela": 56.5, "sgp_math": 61.0, "sgp_trend": {"2023-24": {"ELA": "58", "Math": "65.5"}, "2024-25": {"ELA": "72", "Math": "64"}, "2025-26": {"ELA": "56.5", "Math": "61"}}, "gap": -7.0, "li_ela": "63", "nli_ela": "56", "teacher": 87.8, "ratio": 18.0, "race": {"AmInd": 0, "Asian": 74, "Black": 1, "Hisp": 4, "White": 11, "Pac": 0, "Two": 10}, "maxrace": 74, "race_note": null, "race_total": 741, "pta": 363502, "pta_note": null, "building": "2004 全新重建", "commute": 15.1, "lang": "普通鄰里小學", "centered": "本校"}, {"name": "Spiritridge", "gs": 8, "gs_test": 9, "gs_prog": 7, "ela": 66, "math": 67, "sci": 76, "sgp_ela": 57.5, "sgp_math": 66.0, "sgp_trend": {"2022-23": {"ELA": "61"}, "2023-24": {"ELA": "57", "Math": "64.5"}, "2024-25": {"ELA": "53", "Math": "59"}, "2025-26": {"ELA": "57.5", "Math": "66"}}, "gap": 7.5, "li_ela": "53", "nli_ela": "60.5", "teacher": 89.2, "ratio": 19.0, "race": {"AmInd": 0, "Asian": 38, "Black": 5, "Hisp": 12, "White": 31, "Pac": 0, "Two": 14}, "maxrace": 38, "race_note": null, "race_total": 546, "pta": 104619, "pta_note": null, "building": "1969 建，約2010-11重建", "commute": 10.1, "lang": "普通鄰里小學", "centered": "→Woodridge"}, {"name": "Stevenson", "gs": 4, "gs_test": 2, "gs_prog": 6, "ela": 28, "math": 30, "sci": 28, "sgp_ela": 55.0, "sgp_math": 70.0, "sgp_trend": {"2022-23": {"ELA": "40"}, "2023-24": {"ELA": "47", "Math": "55"}, "2024-25": {"ELA": "45.5", "Math": "62"}, "2025-26": {"ELA": "55", "Math": "70"}}, "gap": 25.5, "li_ela": "46.5", "nli_ela": "72", "teacher": 87.5, "ratio": 14.8, "race": {"AmInd": 0, "Asian": 36, "Black": 8, "Hisp": 45, "White": 7, "Pac": 0, "Two": 3}, "maxrace": 45, "race_note": null, "race_total": 580, "pta": null, "pta_note": "PTA無可用財務", "building": "2018 全新重建", "commute": 4.6, "lang": "普通鄰里小學", "centered": "→Cherry Crest"}, {"name": "Woodridge", "gs": 9, "gs_test": 10, "gs_prog": 8, "ela": 82, "math": 81, "sci": 83, "sgp_ela": 52.0, "sgp_math": 45.0, "sgp_trend": {"2024-25": {"ELA": "59", "Math": "60"}, "2025-26": {"ELA": "52", "Math": "45"}}, "gap": -5.0, "li_ela": "55", "nli_ela": "50", "teacher": 87.1, "ratio": 13.0, "race": {"AmInd": 0, "Asian": 51, "Black": 4, "Hisp": 6, "White": 26, "Pac": 1, "Two": 12}, "maxrace": 51, "race_note": null, "race_total": 554, "pta": 106515, "pta_note": null, "building": "1955 建，2007 全新重建", "commute": 11.9, "lang": "普通鄰里小學", "centered": "本校"}, {"name": "Jing Mei", "gs": 10, "gs_test": 10, "gs_prog": 10, "ela": 79, "math": null, "sci": 86, "sgp_ela": 71.0, "sgp_math": 66.0, "sgp_trend": {"2022-23": {"ELA": "58.5"}, "2023-24": {"ELA": "61", "Math": "54"}, "2024-25": {"ELA": "69", "Math": "64"}, "2025-26": {"ELA": "71", "Math": "66"}}, "gap": 1.0, "li_ela": "70", "nli_ela": "71", "teacher": 63.6, "ratio": 21.0, "race": null, "maxrace": 71, "race_note": "亞裔約71%(NCES)，少數96%", "race_total": null, "pta": 211462, "pta_note": null, "building": "舊/暫置校舍(1965，2023搬Wilburton，待重建)", "commute": 9.4, "lang": "中文沉浸(簡體)", "centered": "—"}];
+let cur=[...D], sortKey='commute', sortDir=1;
+function num(v){return v==null||v===''?null:+v;}
+function badge(v,goodHigh,hi,lo){if(v==null)return '<span class="n">—</span>';let c='';if(goodHigh){c=v>=hi?'g':(v<=lo?'r':'');}else{c=v<=hi?'g':(v>=lo?'r':'');}return c?`<span class="badge ${c}">${v}</span>`:v;}
+function sgpB(v){if(v==null)return '<span class="n">—</span>';let c=v>=60?'g':(v<50?'r':'');return c?`<span class="badge ${c}">${v}</span>`:v;}
+function raceBar(r,total){if(!r)return '<span class="n">資料抑制</span>';
+ const seg=[['亞',r.Asian,'#B4761E'],['白',r.White,'#C9A66B'],['西',r.Hisp,'#7A9E7E'],['黑',r.Black,'#6B5D49'],['混',r.Two,'#D9C4A0']];
+ let bar=seg.map(s=>`<i style="width:${s[1]}%;background:${s[2]}"></i>`).join('');
+ let lg=seg.filter(s=>s[1]>=3).map(s=>`${s[0]}${s[1]}%`).join(' · ');
+ return `<div class="rc">${bar}</div><div class="legend">${lg} · 共${total||'?'}人</div>`;}
+function render(){
+ const tb=document.getElementById('tb');tb.innerHTML='';
+ cur.forEach((d,i)=>{
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td class="name" onclick="tog(${i})">${d.name}</td>
+   <td>${d.commute!=null?d.commute+'分':'—'}</td>
+   <td>${badge(d.gs,1,9,5)}</td>
+   <td>${badge(d.ela,1,80,50)}</td>
+   <td>${badge(d.math,1,80,50)}</td>
+   <td>${sgpB(d.sgp_ela)}</td>
+   <td>${sgpB(d.sgp_math)}</td>
+   <td>${d.teacher!=null?badge(Math.round(d.teacher),1,90,75)+'%':'—'}</td>
+   <td>${d.maxrace!=null?badge(d.maxrace,0,40,60)+'%':'—'}</td>
+   <td><span class="tag">${d.lang.replace('沉浸','').replace('鄰里小學','普通').replace('program(可選普通班)','program')}</span></td>`;
+  tb.appendChild(tr);
+  const dr=document.createElement('tr');dr.className='detail';dr.id='d'+i;
+  const trendStr=Object.entries(d.sgp_trend).map(([y,v])=>`${y.slice(2)}: E${v.ELA||'-'}/M${v.Math||'-'}`).join('　');
+  dr.innerHTML=`<td colspan="10"><div class="dgrid">
+   <div class="dbox"><b>GreatSchools 分項</b><span>${d.gs}/10</span> <span style="font-size:11px;font-weight:400;color:#8a7e6e">成績${d.gs_test} · 成長${d.gs_prog}</span></div>
+   <div class="dbox"><b>達標率 ELA/Math/自然</b><span>${d.ela??'—'} / ${d.math??'—'} / ${d.sci??'—'}%</span></div>
+   <div class="dbox"><b>成長率 SGP 趨勢</b><div class="trend">${trendStr}</div></div>
+   <div class="dbox"><b>成就落差 (低收 vs 非低收 ELA成長)</b><span>${d.li_ela??'—'} vs ${d.nli_ela??'—'}</span> <span style="font-size:11px;color:${d.gap>12?'#B4462F':'#8a7e6e'}">差${d.gap??'—'}</span></div>
+   <div class="dbox"><b>資深教師 / 師生比</b><span>${d.teacher??'—'}% · ${d.ratio??'—'}:1</span></div>
+   <div class="dbox"><b>族裔組成</b>${raceBar(d.race,d.race_total)}${d.race_note?'<div class="legend">'+d.race_note+'</div>':''}</div>
+   <div class="dbox"><b>PTA 年預算</b><span>${d.pta?'$'+d.pta.toLocaleString():'—'}</span>${d.pta_note?'<div class="legend">'+d.pta_note+'</div>':''}</div>
+   <div class="dbox"><b>校舍</b><span style="font-size:12px">${d.building||'—'}</span></div>
+   <div class="dbox"><b>通勤(Crossroads起)</b><span>${d.commute}分</span></div>
+   <div class="dbox"><b>語言 / 資優Centered</b><span style="font-size:12px">${d.lang}</span><div class="legend">資優班 ${d.centered}</div></div>
+  </div></td>`;
+  tb.appendChild(dr);
+ });
+}
+function tog(i){document.getElementById('d'+i).classList.toggle('open');}
+function sortBy(k){if(sortKey===k)sortDir*=-1;else{sortKey=k;sortDir=(k==='maxrace'||k==='commute')?1:-1;}
+ document.getElementById('sortSel').value=k;
+ cur.sort((a,b)=>{let x=num(a[k]),y=num(b[k]);if(x==null)return 1;if(y==null)return -1;return (x-y)*sortDir;});render();}
+let curFilt='all';
+function filt(f){curFilt=f;document.querySelectorAll('.controls button').forEach(b=>b.classList.remove('active'));
+ event.target.classList.add('active');
+ cur=D.filter(d=>{if(f==='near')return d.commute<=10;if(f==='balanced')return d.maxrace!=null&&d.maxrace<=40;if(f==='normal')return d.lang==='普通鄰里小學';return true;});
+ sortBy(sortKey);sortDir*=-1;sortBy(sortKey);}
+sortBy('commute');
+</script></body></html>
